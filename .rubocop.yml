@@ -1,0 +1,9 @@
+plugins:
+  - rubocop-rails
+  - rubocop-performance
+
+AllCops:
+  NewCops: enable
+
+Rails:
+  Enabled: true

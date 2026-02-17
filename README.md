@@ -9,37 +9,72 @@ API REST em Ruby on Rails, preparada para PostgreSQL, com RSpec como suíte de t
 - PostgreSQL
 - RSpec
 - RuboCop
+- Docker + Docker Compose
 
-## Como iniciar
+## Rodando com Docker
 
-1. Instale as dependências:
-
-   ```bash
-   bundle install
-   ```
-
-2. Gere os arquivos base do Rails API (caso ainda não tenha gerado):
+1. Build das imagens:
 
    ```bash
-   bundle exec rails new . --api --database=postgresql --skip-bundle --force
+   docker compose build
    ```
 
-3. Configure o banco em `config/database.yml`.
+2. Suba os containers (`api` + `db`):
+
+   ```bash
+   docker compose up -d
+   ```
+
+3. Caso a estrutura Rails ainda não exista, gere a app dentro do container:
+
+   ```bash
+   docker compose run --rm api bundle exec rails new . --api --database=postgresql --skip-bundle --force
+   ```
 
 4. Crie e migre o banco:
 
    ```bash
-   bin/rails db:create db:migrate
+   docker compose run --rm api bin/rails db:create db:migrate
    ```
 
-## Testes
+5. A API ficará disponível em:
+
+   ```text
+   http://localhost:3000
+   ```
+
+## Configuração do database.yml
+
+No `config/database.yml`, use as variáveis abaixo (já definidas no `docker-compose.yml`):
+
+- `POSTGRES_HOST=db`
+- `POSTGRES_PORT=5432`
+- `POSTGRES_USER=postgres`
+- `POSTGRES_PASSWORD=postgres`
+- `POSTGRES_DB=hub_animal_api_development`
+
+## Comandos úteis
+
+Rodar testes:
 
 ```bash
-bundle exec rspec
+docker compose run --rm api bundle exec rspec
 ```
 
-## Lint
+Rodar lint:
 
 ```bash
-bundle exec rubocop
+docker compose run --rm api bundle exec rubocop
+```
+
+Abrir shell no container da API:
+
+```bash
+docker compose exec api bash
+```
+
+Parar o ambiente:
+
+```bash
+docker compose down
 ```

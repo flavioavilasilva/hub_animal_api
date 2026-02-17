@@ -1,0 +1,9 @@
+.git
+.gitignore
+log/*
+tmp/*
+coverage/
+node_modules/
+vendor/bundle/
+.bundle/
+.DS_Store

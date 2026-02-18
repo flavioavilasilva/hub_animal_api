@@ -83,6 +83,21 @@ RSpec.describe "Animals", type: :request do
       expect(Animal.last.avatar).to be_attached
       expect(JSON.parse(response.body)["avatar_url"]).to be_present
     end
+
+    it "accepts tags as a multipart string and normalizes to array" do
+      token = JsonWebToken.encode(user_id: ong_user.id)
+
+      post "/animals", params: {
+        name: "Apolo",
+        tags: "participa de eventos",
+        size: "small",
+        birth_date: "2022-01-01",
+        avatar: uploaded_avatar
+      }, headers: { "Authorization" => "Bearer #{token}" }
+
+      expect(response).to have_http_status(:created)
+      expect(Animal.last.tags).to eq(["participa de eventos"])
+    end
   end
 
   describe "PATCH /animals/:id" do

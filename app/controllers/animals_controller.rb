@@ -46,7 +46,30 @@ class AnimalsController < ApplicationController
 
   def animal_params
     source = params[:animal].is_a?(ActionController::Parameters) ? params.require(:animal) : params
-    source.permit(:avatar, :name, :size, :birth_date, tags: [])
+    permitted = source.permit(:avatar, :name, :size, :birth_date, :tags, tags: [])
+    permitted[:tags] = normalize_tags(permitted[:tags]) if permitted.key?(:tags)
+    permitted
+  end
+
+  def normalize_tags(raw_tags)
+    return raw_tags if raw_tags.is_a?(Array)
+    return [] if raw_tags.nil?
+
+    if raw_tags.is_a?(String)
+      normalized = raw_tags.strip
+      return [] if normalized.empty?
+
+      begin
+        parsed = JSON.parse(normalized)
+        return parsed if parsed.is_a?(Array)
+      rescue JSON::ParserError
+        # Not JSON, keep fallback behavior below.
+      end
+
+      return normalized.split(",").map(&:strip).reject(&:blank?)
+    end
+
+    Array(raw_tags).compact
   end
 
   def authorize_create!

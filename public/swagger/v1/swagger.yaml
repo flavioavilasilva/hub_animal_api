@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: Hub Animal API - Users
-  version: 1.1.0
-  description: API documentation for users CRUD endpoints.
+  title: Hub Animal API
+  version: 1.2.0
+  description: API documentation for authentication, users and animals.
 servers:
   - url: /
 paths:
@@ -26,6 +26,7 @@ paths:
                 $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Invalid credentials
+
   /users:
     get:
       tags:
@@ -68,6 +69,7 @@ paths:
                 $ref: '#/components/schemas/User'
         '422':
           description: Validation error
+
   /users/{id}:
     get:
       tags:
@@ -139,12 +141,129 @@ paths:
           description: User deleted
         '404':
           description: User not found
+
+  /animals:
+    get:
+      tags:
+        - Animals
+      summary: List animals
+      responses:
+        '200':
+          description: Animals list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Animal'
+    post:
+      tags:
+        - Animals
+      summary: Create animal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AnimalCreateFormData'
+      responses:
+        '201':
+          description: Animal created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Animal'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (only ONG users can create)
+        '422':
+          description: Validation error
+
+  /animals/{id}:
+    get:
+      tags:
+        - Animals
+      summary: Show animal
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Animal details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Animal'
+        '404':
+          description: Animal not found
+    patch:
+      tags:
+        - Animals
+      summary: Update animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AnimalUpdateFormData'
+      responses:
+        '200':
+          description: Animal updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Animal'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (only responsible ONG can update)
+        '404':
+          description: Animal not found
+        '422':
+          description: Validation error
+    delete:
+      tags:
+        - Animals
+      summary: Delete animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Animal deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (only responsible ONG can delete)
+        '404':
+          description: Animal not found
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
   schemas:
     Address:
       type: object
@@ -166,6 +285,7 @@ components:
           type: string
         country:
           type: string
+
     User:
       type: object
       properties:
@@ -202,6 +322,7 @@ components:
         updated_at:
           type: string
           format: date-time
+
     UserCreateInput:
       type: object
       required:
@@ -244,6 +365,7 @@ components:
           type: string
           format: password
       description: At least one of cpf or cnpj must be provided.
+
     UserUpdateInput:
       type: object
       properties:
@@ -281,6 +403,97 @@ components:
           format: password
           nullable: true
       description: At least one of cpf or cnpj must be provided when both are absent.
+
+    AnimalResponsible:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        user_type:
+          type: string
+          enum: [ong, visitor, admin]
+
+    Animal:
+      type: object
+      properties:
+        id:
+          type: integer
+        avatar_url:
+          type: string
+          nullable: true
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        size:
+          type: string
+          enum: [small, medium, large]
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+        responsible_id:
+          type: integer
+        responsible:
+          $ref: '#/components/schemas/AnimalResponsible'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AnimalCreateFormData:
+      type: object
+      required:
+        - name
+        - tags
+        - size
+      properties:
+        avatar:
+          type: string
+          format: binary
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        size:
+          type: string
+          enum: [small, medium, large]
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+
+    AnimalUpdateFormData:
+      type: object
+      properties:
+        avatar:
+          type: string
+          format: binary
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        size:
+          type: string
+          enum: [small, medium, large]
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+
     LoginInput:
       type: object
       required:
@@ -293,6 +506,7 @@ components:
         password:
           type: string
           format: password
+
     LoginResponse:
       type: object
       properties:

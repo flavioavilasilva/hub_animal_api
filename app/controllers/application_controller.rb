@@ -1,5 +1,11 @@
 class ApplicationController < ActionController::API
+  include CanCan::ControllerAdditions
+
   attr_reader :current_user
+
+  rescue_from CanCan::AccessDenied do |exception|
+    render_forbidden(exception.message.presence || "Forbidden")
+  end
 
   private
 
@@ -22,5 +28,9 @@ class ApplicationController < ActionController::API
 
   def render_unauthorized
     render json: { error: "Unauthorized" }, status: :unauthorized
+  end
+
+  def render_forbidden(message = "Forbidden")
+    render json: { error: message }, status: :forbidden
   end
 end

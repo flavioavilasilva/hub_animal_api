@@ -2,6 +2,7 @@ class User < ApplicationRecord
   USER_TYPES = %w[ong visitor admin].freeze
 
   has_secure_password
+  has_many :animals, foreign_key: :responsible_id, inverse_of: :responsible, dependent: :restrict_with_error
 
   validates :name, presence: true
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }

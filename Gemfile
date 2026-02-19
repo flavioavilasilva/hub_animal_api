@@ -22,7 +22,7 @@ gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
-gem "jwt", "~> 2.8"
+gem "jwt", "~> 3.1"
 gem "cancancan", "~> 3.6"
 gem "rswag-ui", "~> 2.16"
 
